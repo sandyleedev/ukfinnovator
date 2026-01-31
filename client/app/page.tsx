@@ -15,9 +15,6 @@ import {
   ResponsiveContainer,
   Area,
   AreaChart,
-  PieChart,
-  Pie,
-  Cell,
   ReferenceLine,
 } from "recharts";
 
@@ -64,22 +61,21 @@ interface ROICalculation {
 }
 
 export default function Home() {
-  const [schoolSize, setSchoolSize] = useState(100); // Number of Teachers
+  const [schoolSize, setSchoolSize] = useState(60);
   const [avgSalary, setAvgSalary] = useState(48892);
-  const [attritionRate, setAttritionRate] = useState(8.8);
-  const [avgSickDays, setAvgSickDays] = useState(8);
-  const [supplyRate, setSupplyRate] = useState(180); // Supply cost for teacher
 
-  const [weeklyHours, setWeeklyHours] = useState(32.5);
+  const [avgSickDays, setAvgSickDays] = useState(8);
+  const [supplyRate, setSupplyRate] = useState(180);
+
+  const [weeklyHours, setWeeklyHours] = useState(54);
   const [teachingWeeks, setTeachingWeeks] = useState(39);
 
+  const [attritionRate, setAttritionRate] = useState(8.8);
   const [absenceReduction, setAbsenceReduction] = useState(0.1);
-  const [retentionImprovement, setRetentionImprovement] = useState(0.05);
-  const [aiPricingMode, setAiPricingMode] = useState<"teacher" | "school">(
-    "teacher",
-  );
+  const [retentionImprovement, setRetentionImprovement] = useState(5);
+  const [replacementCost, setReplacementCost] = useState(20000);
+
   const [aiCostPerTeacher, setAiCostPerTeacher] = useState(100);
-  const [aiCostPerSchool, setAiCostPerSchool] = useState(10000);
   const [trainingCost, setTrainingCost] = useState(2000);
   const [setupCost, setSetupCost] = useState(1000);
 
@@ -107,12 +103,12 @@ export default function Home() {
           absence_days_per_teacher: avgSickDays,
           supply_day_rate: supplyRate,
           absence_reduction_pct: absenceReduction,
-          attrition_rate: attritionRate,
 
-          retention_improvement: retentionImprovement,
-          pricing_mode: aiPricingMode,
+          attrition_rate: attritionRate / 100,
+          retention_improvement: retentionImprovement / 100,
+          replacement_cost: replacementCost,
+
           ai_cost_per_teacher: aiCostPerTeacher,
-          ai_cost_per_school: aiCostPerSchool,
           training_cost: trainingCost,
           setup_cost: setupCost,
         }),
@@ -160,9 +156,8 @@ export default function Home() {
     teachingWeeks,
     absenceReduction,
     retentionImprovement,
-    aiPricingMode,
+    replacementCost,
     aiCostPerTeacher,
-    aiCostPerSchool,
     aiCostPerTeacher,
     trainingCost,
     setupCost,
@@ -184,7 +179,7 @@ export default function Home() {
           display: "grid",
           gridTemplateColumns: "400px 1fr",
           height: "100vh",
-            overflow: "hidden"
+          overflow: "hidden",
         }}
       >
         {/* LEFT PANEL - INPUTS */}
@@ -273,166 +268,37 @@ export default function Home() {
                   fontSize: "14px",
                   fontWeight: "600",
                   color: COLORS.dark,
-                  marginBottom: "10px",
+                  marginBottom: "8px",
                 }}
               >
-                Pricing model
+                AI subscription (per teacher per year)
               </label>
+              <input
+                type="range"
+                min={50}
+                max={150}
+                step={50}
+                value={aiCostPerTeacher}
+                onChange={(e) => setAiCostPerTeacher(Number(e.target.value))}
+                style={{ width: "100%" }}
+              />
 
-              <div style={{ display: "flex", gap: "12px" }}>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 12px",
-                    border:
-                      aiPricingMode === "teacher"
-                        ? `2px solid ${COLORS.primary}`
-                        : "2px solid #e5e7eb",
-                    background:
-                      aiPricingMode === "teacher" ? "#ede9fe" : "white",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color:
-                      aiPricingMode === "teacher"
-                        ? COLORS.primary
-                        : COLORS.dark,
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="aiPricingMode"
-                    value="teacher"
-                    checked={aiPricingMode === "teacher"}
-                    onChange={() => setAiPricingMode("teacher")}
-                    style={{ accentColor: COLORS.primary }}
-                  />
-                  Per teacher
-                </label>
-
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 12px",
-                    border:
-                      aiPricingMode === "school"
-                        ? `2px solid ${COLORS.primary}`
-                        : "2px solid #e5e7eb",
-                    background:
-                      aiPricingMode === "school" ? "#ede9fe" : "white",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color:
-                      aiPricingMode === "school" ? COLORS.primary : COLORS.dark,
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="aiPricingMode"
-                    value="school"
-                    checked={aiPricingMode === "school"}
-                    onChange={() => setAiPricingMode("school")}
-                    style={{ accentColor: COLORS.primary }}
-                  />
-                  Per school
-                </label>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "6px",
+                  marginBottom: "20px",
+                  fontSize: "13px",
+                  color: "#374151",
+                  fontWeight: "600",
+                }}
+              >
+                <span>£50</span>
+                <span>£100</span>
+                <span>£150</span>
               </div>
             </div>
-
-            {aiPricingMode === "teacher" && (
-              <div style={{ marginBottom: "20px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: COLORS.dark,
-                    marginBottom: "8px",
-                  }}
-                >
-                  AI subscription (per teacher per year)
-                </label>
-                <input
-                  type="range"
-                  min={50}
-                  max={150}
-                  step={50}
-                  value={aiCostPerTeacher}
-                  onChange={(e) => setAiCostPerTeacher(Number(e.target.value))}
-                  style={{ width: "100%" }}
-                />
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginTop: "6px",
-                    marginBottom: "20px",
-                    fontSize: "13px",
-                    color: "#374151",
-                    fontWeight: "600",
-                  }}
-                >
-                  <span>£50</span>
-                  <span>£100</span>
-                  <span>£150</span>
-                </div>
-              </div>
-            )}
-
-            {aiPricingMode === "school" && (
-              <div style={{ marginBottom: "20px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    color: COLORS.dark,
-                    marginBottom: "8px",
-                  }}
-                >
-                  AI subscription (per school per year)
-                </label>
-                <input
-                  type="range"
-                  min={3000}
-                  max={20000}
-                  step={1000}
-                  value={aiCostPerSchool}
-                  onChange={(e) => setAiCostPerSchool(Number(e.target.value))}
-                  style={{ width: "100%" }}
-                />
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "7fr 7.5fr",
-                    marginTop: "6px",
-                    marginBottom: "20px",
-                    fontSize: "13px",
-                    color: "#374151",
-                    fontWeight: "600",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <span>£3,000</span>
-                    <span>£10,000</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <span>£20,000</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div style={{ marginBottom: "20px" }}>
               <label
@@ -529,8 +395,16 @@ export default function Home() {
               value={retentionImprovement}
               onChange={setRetentionImprovement}
               min={0}
-              max={10}
-              step={0.5}
+              max={100}
+              step={5}
+            />
+            <InputField
+              label="Replacement Cost (£)"
+              value={replacementCost}
+              onChange={setReplacementCost}
+              min={0}
+              max={20000}
+              step={1000}
             />
           </Section>
 
@@ -609,8 +483,8 @@ export default function Home() {
                   color={COLORS.primary}
                 />
                 <MetricCard
-                  label="Net Savings £"
-                  value={formatCurrency(calculations.summary.net_benefit)}
+                  label="Net Present Value £"
+                  value={formatCurrency(calculations.summary.npv_total)}
                   icon={<DollarSign size={24} />}
                   color={COLORS.secondary}
                 />
@@ -634,21 +508,8 @@ export default function Home() {
                     color: COLORS.dark,
                   }}
                 >
-                  MAIN CHART
+                  Cumulative Net Benefit
                 </h3>
-
-                <p
-                  style={{
-                    fontSize: "14px",
-                    color: "#6b7280",
-                    marginBottom: "16px",
-                  }}
-                >
-                  Cumulative Net Benefit{" "}
-                  <span style={{ color: COLORS.success, fontWeight: "600" }}>
-                    Area
-                  </span>
-                </p>
 
                 <ResponsiveContainer width="100%" height={350}>
                   <AreaChart
@@ -773,10 +634,16 @@ export default function Home() {
                       />
                       <Legend wrapperStyle={{ fontSize: "12px" }} />
                       <Bar
-                        dataKey="absence_savings"
+                        dataKey="productivity_savings"
+                        stackId="a"
+                        fill={COLORS.secondary}
+                        name="Productivity value"
+                      />
+                      <Bar
+                        dataKey="supply_savings"
                         stackId="a"
                         fill={COLORS.primary}
-                        name="Absence savings"
+                        name="Supply savings"
                       />
                       <Bar
                         dataKey="retention_savings"
@@ -785,60 +652,6 @@ export default function Home() {
                         name="Retention savings"
                       />
                     </BarChart>
-                  </ResponsiveContainer>
-                </ChartCard>
-
-                {/* Pie Chart */}
-                <ChartCard title="Total Benefits vs Total Costs">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={[
-                          {
-                            name: "Benefits",
-                            value: calculations.summary.total_benefits,
-                            color: COLORS.success,
-                          },
-                          {
-                            name: "Costs",
-                            value: calculations.summary.total_costs,
-                            color: COLORS.danger,
-                          },
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }: any) =>
-                          `${name}: ${(percent * 100).toFixed(0)}%`
-                        }
-                        outerRadius={100}
-                        dataKey="value"
-                      >
-                        {[
-                          {
-                            name: "Benefits",
-                            value: calculations.summary.total_benefits,
-                            color: COLORS.success,
-                          },
-                          {
-                            name: "Costs",
-                            value: calculations.summary.total_costs,
-                            color: COLORS.danger,
-                          },
-                        ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          background: "white",
-                          border: "2px solid " + COLORS.primary,
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                        }}
-                        formatter={(v: any) => formatCurrency(Number(v))}
-                      />
-                    </PieChart>
                   </ResponsiveContainer>
                 </ChartCard>
 
@@ -863,14 +676,14 @@ export default function Home() {
                       />
                       <Legend wrapperStyle={{ fontSize: "12px" }} />
                       <Bar
-                        dataKey="total_costs"
+                        dataKey="year_costs"
                         fill={COLORS.danger}
-                        name="Total costs"
+                        name="Yearly costs"
                       />
                       <Bar
-                        dataKey="total_benefits"
+                        dataKey="year_savings"
                         fill={COLORS.success}
-                        name="Total benefits"
+                        name="Yearly benefits"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -912,7 +725,7 @@ export default function Home() {
                   </ResponsiveContainer>
                 </ChartCard>
 
-                {/* Adoption Rate Timeline (bonus, backend field 활용) */}
+                {/* Adoption Rate Timeline */}
                 <ChartCard title="Adoption Rate Timeline">
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={calculations.annual_breakdown}>
@@ -942,63 +755,6 @@ export default function Home() {
                         name="Adoption rate"
                       />
                     </LineChart>
-                  </ResponsiveContainer>
-                </ChartCard>
-
-                {/* Cumulative Net Benefit (bonus: backend에 있으면 유용) */}
-                <ChartCard title="Cumulative Net Benefit">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={calculations.annual_breakdown}>
-                      <defs>
-                        <linearGradient
-                          id="colorCumNet2"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor={COLORS.success}
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor={COLORS.success}
-                            stopOpacity={0.1}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="year" style={{ fontSize: "12px" }} />
-                      <YAxis
-                        style={{ fontSize: "12px" }}
-                        tickFormatter={(v) => formatCurrency(Number(v))}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: "white",
-                          border: "2px solid " + COLORS.primary,
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                        }}
-                        formatter={(v: any) => formatCurrency(Number(v))}
-                      />
-                      <ReferenceLine
-                        y={0}
-                        stroke="#ef4444"
-                        strokeDasharray="5 5"
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="cumulative_net_benefit"
-                        stroke={COLORS.success}
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorCumNet2)"
-                        name="Cumulative net benefit"
-                      />
-                    </AreaChart>
                   </ResponsiveContainer>
                 </ChartCard>
               </div>
