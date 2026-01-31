@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { TrendingUp, DollarSign, Clock } from "lucide-react";
+import { TrendingUp, Clock, PoundSterling } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -17,48 +17,14 @@ import {
   AreaChart,
   ReferenceLine,
 } from "recharts";
-
-const COLORS = {
-  primary: "#1265ff",
-  secondary: "rgba(211,25,158,0.62)",
-  accent: "#10b981",
-  danger: "#ef4444",
-  success: "#22c55e",
-  warning: "#f59e0b",
-  light: "#f3f4f6",
-  dark: "#1f2937",
-};
-
-const API_URL = "http://localhost:8000";
-
-interface YearlyData {
-  year: string;
-  year_number: number;
-  cost: number;
-  savings: number;
-  net_benefit: number;
-  cumulative_cashflow: number;
-  roi: number;
-  supply_teacher_savings: number;
-  retention_savings: number;
-  productivity_savings: number;
-}
-
-interface ROICalculation {
-  summary: any;
-  annual_breakdown: any[];
-
-  annual_ai_cost: number;
-  initial_cost: number;
-  supply_teacher_savings: number;
-  retention_savings: number;
-  productivity_savings: number;
-  total_annual_savings: number;
-  net_annual_benefit: number;
-  payback_period: number;
-  teachers_retained: number;
-  hours_saved_per_teacher: number;
-}
+import { API_URL, COLORS } from "@/app/constants";
+import ChartCard from "@/app/components/ChartCard";
+import MetricCard from "@/app/components/MetricCard";
+import { formatCurrency } from "@/app/utils/formatCurrency";
+import InputField from "@/app/components/InputField";
+import DashboardSection from "@/app/components/DashboardSection";
+import Footer from "@/app/components/Footer";
+import Loading from "@/app/components/Loading";
 
 export default function Home() {
   const [schoolSize, setSchoolSize] = useState(60);
@@ -163,15 +129,6 @@ export default function Home() {
     setupCost,
   ]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <div style={{ minHeight: "100vh", background: "#ffffff" }}>
       <div
@@ -203,7 +160,7 @@ export default function Home() {
           </h1>
 
           {/* School Profile */}
-          <Section title="School Profile">
+          <DashboardSection title="School Profile">
             <InputField
               label="Number of Teachers"
               value={schoolSize}
@@ -257,10 +214,10 @@ export default function Home() {
               max={250}
               step={10}
             />
-          </Section>
+          </DashboardSection>
 
           {/* AI Tool Assumptions */}
-          <Section title="AI Tool Assumptions">
+          <DashboardSection title="AI Tool Assumptions">
             <div style={{ marginBottom: "20px" }}>
               <label
                 style={{
@@ -348,10 +305,10 @@ export default function Home() {
               max={5000}
               step={100}
             />
-          </Section>
+          </DashboardSection>
 
           {/* Impact Assumptions */}
-          <Section title="Impact Assumptions">
+          <DashboardSection title="Impact Assumptions">
             <div style={{ marginBottom: "20px" }}>
               <label
                 style={{
@@ -406,7 +363,7 @@ export default function Home() {
               max={20000}
               step={1000}
             />
-          </Section>
+          </DashboardSection>
 
           {/* Calculate Button */}
           <button
@@ -483,9 +440,9 @@ export default function Home() {
                   color={COLORS.primary}
                 />
                 <MetricCard
-                  label="Net Present Value £"
+                  label="Net Present Value (£)"
                   value={formatCurrency(calculations.summary.npv_total)}
-                  icon={<DollarSign size={24} />}
+                  icon={<PoundSterling size={24} />}
                   color={COLORS.secondary}
                 />
               </div>
@@ -758,204 +715,13 @@ export default function Home() {
                   </ResponsiveContainer>
                 </ChartCard>
               </div>
-
-              {/* Footer */}
-              <div
-                style={{
-                  marginTop: "32px",
-                  padding: "16px",
-                  background: "#f9fafb",
-                  borderRadius: "8px",
-                  textAlign: "center",
-                  fontSize: "12px",
-                  color: "#6b7280",
-                }}
-              >
-                <strong>UKFinnovator 2026 Challenge</strong> | FinTech for
-                EdTech | Sponsor:{" "}
-                <a
-                  href="http://mysmartteach.com/"
-                  style={{
-                    color: COLORS.primary,
-                    textDecoration: "none",
-                    fontWeight: "600",
-                  }}
-                >
-                  My Smart Teach
-                </a>
-              </div>
+              <Footer />
             </>
           ) : (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                fontSize: "18px",
-                color: "#9ca3af",
-              }}
-            >
-              {loading ? "Loading..." : 'Click "Calculate ROI" to see results'}
-            </div>
+            <Loading loading={loading} />
           )}
         </div>
       </div>
     </div>
   );
 }
-
-// Components
-const Section = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div style={{ marginBottom: "28px" }}>
-    <h3
-      style={{
-        fontSize: "16px",
-        fontWeight: "700",
-        marginBottom: "16px",
-        color: COLORS.dark,
-        borderBottom: "2px solid #e5e7eb",
-        paddingBottom: "8px",
-      }}
-    >
-      {title}
-    </h3>
-    {children}
-  </div>
-);
-
-const InputField = ({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-}: {
-  label: string;
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
-  step: number;
-}) => (
-  <div style={{ marginBottom: "16px" }}>
-    <label
-      style={{
-        display: "block",
-        fontSize: "14px",
-        fontWeight: "500",
-        color: "#374151",
-        marginBottom: "6px",
-      }}
-    >
-      {label}
-    </label>
-    <input
-      type="number"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      style={{
-        width: "100%",
-        padding: "10px 12px",
-        border: "1px solid #d1d5db",
-        borderRadius: "6px",
-        fontSize: "14px",
-        fontWeight: "600",
-        color: COLORS.dark,
-        outline: "none",
-        transition: "border-color 0.2s",
-      }}
-      onFocus={(e) => (e.target.style.borderColor = COLORS.primary)}
-      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-    />
-  </div>
-);
-
-const MetricCard = ({
-  label,
-  value,
-  icon,
-  color,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  color: string;
-}) => (
-  <div
-    style={{
-      background: "white",
-      border: `2px solid ${color}`,
-      borderRadius: "12px",
-      padding: "20px",
-    }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        marginBottom: "12px",
-      }}
-    >
-      <div style={{ color: color }}>{icon}</div>
-      <div
-        style={{
-          fontSize: "14px",
-          fontWeight: "600",
-          color: "#6b7280",
-        }}
-      >
-        {label}
-      </div>
-    </div>
-    <div
-      style={{
-        fontSize: "28px",
-        fontWeight: "700",
-        color: color,
-      }}
-    >
-      {value}
-    </div>
-  </div>
-);
-
-const ChartCard = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div
-    style={{
-      background: "white",
-      border: "2px solid #e5e7eb",
-      borderRadius: "12px",
-      padding: "24px",
-    }}
-  >
-    <h4
-      style={{
-        fontSize: "16px",
-        fontWeight: "600",
-        marginBottom: "16px",
-        color: COLORS.dark,
-      }}
-    >
-      {title}
-    </h4>
-    {children}
-  </div>
-);
