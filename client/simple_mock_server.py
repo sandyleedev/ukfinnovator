@@ -173,7 +173,7 @@ def calculate_roi(data):
         # Costs
         # ------------------------------
         if pricing_mode == "Per Teacher":
-            ai_subscription = teachers * adoption * ai_cost_per_teacher
+            ai_subscription = adoption * ai_cost_per_teacher
         else:
             base_cost = (
                 ai_cost_per_school * adoption
