@@ -185,7 +185,8 @@ def calculate_roi(data):
         year_costs = ai_subscription
 
         if year == 1:
-            year_costs += training_cost + setup_cost
+            one_off_cost = (training_cost + setup_cost) * teachers
+            year_costs += one_off_cost
 
         # ------------------------------
         # Net & cumulative
