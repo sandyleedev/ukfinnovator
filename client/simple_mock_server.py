@@ -10,10 +10,12 @@ import logging
 # Suppress default HTTP logging
 logging.getLogger('http.server').setLevel(logging.WARNING)
 
+
 class MockAPIHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         # Suppress default request logging
         pass
+
     def _set_headers(self, status_code=200):
         self.send_response(status_code)
         self.send_header('Content-type', 'application/json')
@@ -42,13 +44,13 @@ class MockAPIHandler(BaseHTTPRequestHandler):
                     self._set_headers(400)
                     self.wfile.write(json.dumps({'error': 'Missing Content-Length'}).encode())
                     return
-                
+
                 post_data = self.rfile.read(content_length)
                 input_data = json.loads(post_data.decode())
-                
+
                 # ROI 계산
                 result = calculate_roi(input_data)
-                
+
                 self._set_headers()
                 self.wfile.write(json.dumps(result).encode())
             except json.JSONDecodeError as e:
@@ -60,6 +62,7 @@ class MockAPIHandler(BaseHTTPRequestHandler):
         else:
             self._set_headers(404)
             self.wfile.write(json.dumps({'error': 'Not found'}).encode())
+
 
 def calculate_roi(data):
     """
@@ -89,7 +92,7 @@ def calculate_roi(data):
     })
 
     # ==================================================
-    # DERIVED PAY RATES 
+    # DERIVED PAY RATES
     # ==================================================
     fully_loaded_salary = avg_salary * (1 + on_cost_pct)
 
@@ -132,8 +135,11 @@ def calculate_roi(data):
     # YEAR-BY-YEAR CALCULATION
     # ==================================================
     annual_results = []
-    total_benefits = 0
-    total_costs = 0
+    total_benefits = 0.0
+    total_costs = 0.0
+
+    cumulative_net_benefit = 0.0
+    payback_year = None
 
     for year in range(1, YEARS + 1):
         adoption = adoption_by_year.get(year, 0)
@@ -142,22 +148,22 @@ def calculate_roi(data):
         # Absence savings
         # ------------------------------
         absence_savings = (
-            baseline_supply_cost
-            * absence_reduction_pct
-            * adoption
+                baseline_supply_cost
+                * absence_reduction_pct
+                * adoption
         )
 
         # ------------------------------
         # Retention savings (lag applied)
         # ------------------------------
         if retention_lag == 1 and year == 1:
-            retention_savings = 0
+            retention_savings = 0.0
         else:
             avoided_leavers = (
-                teachers
-                * attrition_rate
-                * retention_improvement
-                * adoption
+                    teachers
+                    * attrition_rate
+                    * retention_improvement
+                    * adoption
             )
             retention_savings = avoided_leavers * replacement_cost
 
@@ -181,7 +187,14 @@ def calculate_roi(data):
         if year == 1:
             year_costs += training_cost + setup_cost
 
+        # ------------------------------
+        # Net & cumulative (✅ 추가된 핵심)
+        # ------------------------------
         net_benefit = year_benefits - year_costs
+        cumulative_net_benefit += net_benefit
+
+        if payback_year is None and cumulative_net_benefit >= 0:
+            payback_year = year
 
         annual_results.append({
             "year": year,
@@ -190,7 +203,8 @@ def calculate_roi(data):
             "retention_savings": round(retention_savings, 2),
             "total_benefits": round(year_benefits, 2),
             "total_costs": round(year_costs, 2),
-            "net_benefit": round(net_benefit, 2)
+            "net_benefit": round(net_benefit, 2),
+            "cumulative_net_benefit": round(cumulative_net_benefit, 2)  # ✅ 프론트 차트용
         })
 
         total_benefits += year_benefits
@@ -209,13 +223,15 @@ def calculate_roi(data):
             "teaching_weeks": teaching_weeks,
             "hourly_rate": round(hourly_rate, 2),
             "daily_rate": round(daily_rate, 2),
-            "retention_lag": retention_lag
+            "retention_lag": retention_lag,
+            "pricing_mode": pricing_mode
         },
         "summary": {
             "total_benefits": round(total_benefits, 2),
             "total_costs": round(total_costs, 2),
             "net_benefit": round(total_benefits - total_costs, 2),
-            "roi_percent": round(roi_pct, 1)
+            "roi_percent": round(roi_pct, 1),
+            "payback_year": payback_year  # ✅ 추가
         },
         "annual_breakdown": annual_results
     }
@@ -233,6 +249,7 @@ def run_server(port=8000):
     except KeyboardInterrupt:
         print('\n✅ Server stopped')
         httpd.server_close()
+
 
 if __name__ == '__main__':
     run_server()
