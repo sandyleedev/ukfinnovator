@@ -197,13 +197,13 @@ def calculate_roi(data):
 
         annual_results.append({
             "year": year,
-            "adoption_rate": round(adoption, 2),
-            "absence_savings": round(absence_savings, 2),
-            "retention_savings": round(retention_savings, 2),
-            "total_benefits": round(year_benefits, 2),
-            "total_costs": round(year_costs, 2),
-            "net_benefit": round(net_benefit, 2),
-            "cumulative_net_benefit": round(cumulative_net_benefit, 2)
+            "adoption_rate": adoption,
+            "absence_savings": absence_savings,
+            "retention_savings": retention_savings,
+            "total_benefits": year_benefits,
+            "total_costs": year_costs,
+            "net_benefit": net_benefit,
+            "cumulative_net_benefit": cumulative_net_benefit
         })
 
         total_benefits += year_benefits
@@ -220,17 +220,17 @@ def calculate_roi(data):
             "teachers": teachers,
             "weekly_hours": weekly_hours,
             "teaching_weeks": teaching_weeks,
-            "hourly_rate": round(hourly_rate, 2),
-            "daily_rate": round(daily_rate, 2),
+            "hourly_rate": hourly_rate,
+            "daily_rate": daily_rate,
             "retention_lag": retention_lag,
             "pricing_mode": pricing_mode
         },
         "summary": {
-            "total_benefits": round(total_benefits, 2),
-            "total_costs": round(total_costs, 2),
-            "net_benefit": round(total_benefits - total_costs, 2),
-            "roi_percent": round(roi_pct, 1),
-            "payback_year": payback_year  # ✅ 추가
+            "total_benefits": total_benefits,
+            "total_costs": total_costs,
+            "net_benefit": total_benefits - total_costs,
+            "roi_percent": roi_pct,
+            "payback_year": payback_year 
         },
         "annual_breakdown": annual_results
     }
