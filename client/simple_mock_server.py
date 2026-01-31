@@ -89,7 +89,7 @@ def calculate_roi(data):
     })
 
     # ==================================================
-    # DERIVED PAY RATES (implicit spreadsheet logic)
+    # DERIVED PAY RATES 
     # ==================================================
     fully_loaded_salary = avg_salary * (1 + on_cost_pct)
 
@@ -201,32 +201,6 @@ def calculate_roi(data):
         if total_costs else 0
     )
 
-        # Net & cumulative
-        net_benefit = year_benefits - year_costs
-        cumulative_net_benefit += net_benefit
-
-        if payback_year is None and cumulative_net_benefit >= 0:
-            payback_year = year
-
-        annual_results.append({
-            "year": year,
-            "adoption_rate": round(adoption, 2),
-            "absence_savings": round(absence_savings, 2),
-            "retention_savings": round(retention_savings, 2),
-            "total_benefits": round(year_benefits, 2),
-            "total_costs": round(year_costs, 2),
-            "net_benefit": round(net_benefit, 2),
-            "cumulative_net_benefit": round(cumulative_net_benefit, 2)
-        })
-
-        total_benefits += year_benefits
-        total_costs += year_costs
-
-    roi_pct = (
-        (total_benefits - total_costs) / total_costs * 100
-        if total_costs else 0
-    )
-
     # OUTPUT
     return {
         "inputs_used": {
@@ -242,7 +216,6 @@ def calculate_roi(data):
             "total_costs": round(total_costs, 2),
             "net_benefit": round(total_benefits - total_costs, 2),
             "roi_percent": round(roi_pct, 1)
-            "payback_year": payback_year
         },
         "annual_breakdown": annual_results
     }
