@@ -131,7 +131,10 @@ def calculate_roi(data):
     training_cost = data.get("training_cost", 2000)
     setup_cost = data.get("setup_cost", 1000)
 
-    # ==================================================
+    # PRODUCTIVITY ASSUMPTIONS
+    effective_time_saved_rate = data.get("effective_time_saved_rate", 0.05) 
+    hours_saved_per_week = data.get("hours_saved_per_week", 1)
+    
     # YEAR-BY-YEAR CALCULATION
     # ==================================================
     annual_results = []
@@ -150,28 +153,23 @@ def calculate_roi(data):
         absence_savings = (
                 baseline_supply_cost
                 * absence_reduction_pct
-                * adoption
         )
 
-        # ------------------------------
         # Retention savings (lag applied)
         # ------------------------------
         if retention_lag == 1 and year == 1:
             retention_savings = 0.0
         else:
-            avoided_leavers = (
-                    teachers
-                    * attrition_rate
-                    * retention_improvement
-                    * adoption
-            )
-            retention_savings = avoided_leavers * replacement_cost
+            retention_savings = teachers * attrition_rate * retention_improvement * replacement_cost
+        
+        # Productivity value
+        hours_saved = effective_time_saved_rate * hours_saved_per_week * teaching_weeks * adoption
+        productivity_value = hours_saved * hourly_rate * teachers
 
-        year_benefits = absence_savings + retention_savings
-
-        # ------------------------------
+        # Total benefits = absence + retention + productivity
+        year_benefits = absence_savings + retention_savings + productivity_value
+        
         # Costs
-        # ------------------------------
         if pricing_mode == "Per Teacher":
             ai_subscription = adoption * ai_cost_per_teacher
         else:
